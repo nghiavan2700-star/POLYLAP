@@ -1,3 +1,4 @@
+# POLYLAP product manager module
 # product_manager.py
 import json
 
@@ -5,6 +6,7 @@ DATA_FILE = "products.json"
 
 
 def load_data():
+    print("Loading data...")
     """
     Read data from products.json.
     If file does not exist, return empty list.
@@ -48,124 +50,128 @@ def _input_int(prompt, allow_empty=False, default=None):
     allow_empty=True: empty input returns default (used in update).
     """
     while True:
-        s = input(prompt).strip()
-        if allow_empty and s == "":
-            return default
-        if s.isdigit():
-            return int(s)
-        print("Invalid input. Please enter an integer.")
+        try:
+            price = int(input("Enter price: "))
+            break
+        except:
+            print("Price must be an integer.")
+
+    while True:
+        try:
+            quantity = int(input("Enter quantity: "))
+            break
+        except:
+            print("Quantity must be an integer.")
 
 
 def add_product(products):
-    """
-    Ask user for new product info, auto-generate ID, add to list.
-    Return updated list.
-    """
-    new_id = _generate_new_id(products)
-    print("New product ID:", new_id)
+    new_id = "LT" + str(len(products) + 1).zfill(2)
 
-    name = input("Enter product name: ").strip()
-    brand = input("Enter brand: ").strip()
-    price = _input_int("Enter price (integer): ")
-    qty = _input_int("Enter quantity (integer): ")
+    name = input("Enter product name: ")
+    brand = input("Enter brand: ")
+    price = int(input("Enter price: "))
+    quantity = int(input("Enter quantity: "))
 
     product = {
         "id": new_id,
         "name": name,
         "brand": brand,
         "price": price,
-        "quantity": qty
+        "quantity": quantity
     }
 
     products.append(product)
-    print("Product added.")
+    print("Product added successfully.")
+    return products
+
+def update_product(products):
+    pid = input("Enter product ID to update: ")
+
+    for product in products:
+        if product["id"] == pid:
+            product["name"] = input("New name: ")
+            product["brand"] = input("New brand: ")
+            product["price"] = int(input("New price: "))
+            product["quantity"] = int(input("New quantity: "))
+            print("Product updated.")
+            return products
+
+    print("Product not found.")
     return products
 
 
 def update_product(products):
-    """
-    Update product by ID. If not found, show message.
-    If found, allow updating name, brand, price, quantity.
-    Press Enter to keep old value.
-    """
-    pid = input("Enter product ID to update (e.g., LT01): ").strip().upper()
+    pid = input("Enter product ID to update: ")
 
-    for p in products:
-        if str(p.get("id", "")).upper() == pid:
-            print("Product found. Press Enter to keep current value.")
-
-            new_name = input(f"Name ({p['name']}): ").strip()
+    for product in products:
+        if product["id"] == pid:
+            new_name = input("New name (leave blank to keep): ")
             if new_name != "":
-                p["name"] = new_name
+                product["name"] = new_name
 
-            new_brand = input(f"Brand ({p['brand']}): ").strip()
+            new_brand = input("New brand (leave blank to keep): ")
             if new_brand != "":
-                p["brand"] = new_brand
+                product["brand"] = new_brand
 
-            p["price"] = _input_int(
-                f"Price ({p['price']}): ",
-                allow_empty=True,
-                default=p["price"]
-            )
+            new_price = input("New price (leave blank to keep): ")
+            if new_price != "":
+                product["price"] = int(new_price)
 
-            p["quantity"] = _input_int(
-                f"Quantity ({p['quantity']}): ",
-                allow_empty=True,
-                default=p["quantity"]
-            )
+            new_qty = input("New quantity (leave blank to keep): ")
+            if new_qty != "":
+                product["quantity"] = int(new_qty)
 
             print("Product updated.")
             return products
 
-    print("Product ID not found.")
+    print("Product not found.")
     return products
 
 
 def delete_product(products):
-    """
-    Delete product by ID.
-    """
-    pid = input("Enter product ID to delete (e.g., LT01): ").strip().upper()
+    pid = input("Enter product ID to delete: ")
 
-    for i, p in enumerate(products):
-        if str(p.get("id", "")).upper() == pid:
-            confirm = input("Confirm delete? (y/n): ").strip().lower()
+    for product in products:
+        if product["id"] == pid:
+            products.remove(product)
+            print("Product deleted.")
+            return products
+
+    print("Product not found.")
+    return products
+
+def delete_product(products):
+    pid = input("Enter product ID to delete: ")
+
+    for product in products:
+        if product["id"] == pid:
+            confirm = input("Confirm delete (y/n): ").lower()
             if confirm == "y":
-                products.pop(i)
+                products.remove(product)
                 print("Product deleted.")
             else:
                 print("Delete cancelled.")
             return products
 
-    print("Product ID not found.")
+    print("Product not found.")
     return products
 
-
 def search_product_by_name(products):
-    """
-    Search products by keyword in name (case-insensitive).
-    Display all matches.
-    """
-    keyword = input("Enter keyword: ").strip().lower()
-    results = [p for p in products if keyword in str(p.get("name", "")).lower()]
+    keyword = input("Enter keyword to search: ").lower()
+    found = False
 
-    if not results:
-        print("No matching products found.")
-        return
+    for product in products:
+        if keyword in product["name"].lower():
+            print("-----------------------------")
+            print("ID:", product["id"])
+            print("Name:", product["name"])
+            print("Brand:", product["brand"])
+            print("Price:", product["price"])
+            print("Quantity:", product["quantity"])
+            found = True
 
-    print("Matching products:", len(results))
-    _print_products(results)
-
-
-def display_all_products(products):
-    """
-    Display all products in a readable table.
-    If empty, show message.
-    """
-    if not products:
-        print("Inventory is empty.")
-        return
-    _print_products(products)
+    if not found:
+        print("No matching product found.")
 
 
 def _print_products(products):
