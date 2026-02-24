@@ -172,7 +172,19 @@ def search_product_by_name(products):
 
     if not found:
         print("No matching product found.")
+        
+def display_all_products(products):
+    if len(products) == 0:
+        print("Inventory is empty.")
+        return
 
+    for product in products:
+        print("-----------------------------")
+        print("ID:", product["id"])
+        print("Name:", product["name"])
+        print("Brand:", product["brand"])
+        print("Price:", product["price"])
+        print("Quantity:", product["quantity"])
 
 def _print_products(products):
     """
